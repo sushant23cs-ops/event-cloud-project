@@ -2,127 +2,116 @@
 <html>
 <head>
   <meta charset="UTF-8" />
-  <title>Event Manager</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <title>Events</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
 </head>
-<body>
 
-<nav class="navbar navbar-dark">
+<body class="bg-light">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
   <div class="container">
-    <span class="navbar-brand">Event Manager</span>
-    <div>
-      <a href="login.html" class="btn btn-outline-light btn-sm">Login</a>
-      <a href="dashboard.html" class="btn btn-warning btn-sm">Admin</a>
-      <a href="my.html" class="btn btn-primary btn-sm">My Registrations</a>
+    <a class="navbar-brand" href="index.html">Event Cloud</a>
+    <div class="d-flex gap-2">
+      <a class="btn btn-outline-light btn-sm" href="dashboard.html">My Registrations</a>
+      <a class="btn btn-outline-light btn-sm" href="login.html" id="loginBtn">Login</a>
+      <button class="btn btn-warning btn-sm" id="logoutBtn" style="display:none;">Logout</button>
     </div>
   </div>
 </nav>
 
 <div class="container py-4">
-  <h3 class="text-white mb-3">Upcoming Events</h3>
-
-  <div class="card p-3 mb-3">
-    <div class="row g-2">
-      <div class="col-md-8">
-        <input id="searchBox" class="form-control" placeholder="Search by title or location..." oninput="applyFilters()">
-      </div>
-      <div class="col-md-4">
-        <select id="categoryFilter" class="form-select" onchange="applyFilters()">
-          <option value="ALL" selected>All Categories</option>
-          <option value="Concert">Concert</option>
-          <option value="Seminar">Seminar</option>
-          <option value="Workshop">Workshop</option>
-          <option value="Sports">Sports</option>
-          <option value="Festival">Festival</option>
-          <option value="General">General</option>
-        </select>
-      </div>
-    </div>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="m-0">All Events</h3>
+    <button class="btn btn-secondary btn-sm" onclick="loadEvents()">Refresh</button>
   </div>
+
+  <div id="status" class="text-muted mb-3"></div>
 
   <div id="events" class="row g-3"></div>
 </div>
 
 <script src="config.js"></script>
 <script>
-let allEvents = [];
+const statusEl = document.getElementById("status");
+const eventsEl = document.getElementById("events");
+const loginBtn = document.getElementById("loginBtn");
+const logoutBtn = document.getElementById("logoutBtn");
 
-function token() {
-  return localStorage.getItem("token");
+function setAuthUI() {
+  const logged = isLoggedIn();
+  loginBtn.style.display = logged ? "none" : "inline-block";
+  logoutBtn.style.display = logged ? "inline-block" : "none";
+  logoutBtn.onclick = logout;
+}
+
+function formatDate(d) {
+  if (!d) return "";
+  // Railway date comes like "2026-03-01T00:00:00.000Z" sometimes
+  return String(d).slice(0, 10);
+}
+
+function card(event) {
+  const canRegister = isLoggedIn();
+  return `
+    <div class="col-12 col-md-6 col-lg-4">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">${event.title || "Untitled"}</h5>
+          <div class="text-muted small mb-2">
+            <div><b>Category:</b> ${event.category ?? "General"}</div>
+            <div><b>Date:</b> ${formatDate(event.event_date)}</div>
+            <div><b>Location:</b> ${event.location ?? "-"}</div>
+            ${event.capacity != null ? `<div><b>Capacity:</b> ${event.capacity}</div>` : ""}
+          </div>
+          <p class="card-text">${event.description ?? ""}</p>
+          <button class="btn btn-primary w-100" ${canRegister ? "" : "disabled"}
+            onclick="registerEvent(${event.id})">
+            ${canRegister ? "Register for this event" : "Login to Register"}
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 async function loadEvents() {
-  const res = await fetch(`${API_BASE}/api/events`);
-  allEvents = await res.json();
-  applyFilters();
-}
+  statusEl.textContent = "Loading events...";
+  eventsEl.innerHTML = "";
 
-function applyFilters() {
-  const q = (document.getElementById("searchBox").value || "").toLowerCase().trim();
-  const cat = document.getElementById("categoryFilter").value || "ALL";
-
-  let filtered = allEvents;
-
-  if (cat !== "ALL") {
-    filtered = filtered.filter(e => (e.category || "General") === cat);
-  }
-
-  if (q) {
-    filtered = filtered.filter(e =>
-      (e.title || "").toLowerCase().includes(q) ||
-      (e.location || "").toLowerCase().includes(q)
-    );
-  }
-
-  renderEvents(filtered);
-}
-
-function renderEvents(events) {
-  const wrap = document.getElementById("events");
-  wrap.innerHTML = "";
-
-  if (!events.length) {
-    wrap.innerHTML = `<div class="col-12"><div class="alert alert-info">No events found.</div></div>`;
+  const { ok, data } = await apiFetch("/api/events");
+  if (!ok) {
+    statusEl.textContent = "Failed to load events.";
+    alert(data.error || data.message || "Failed to load events");
     return;
   }
 
-  events.forEach(e => {
-    const card = document.createElement("div");
-    card.className = "col-md-4";
-    card.innerHTML = `
-      <div class="card shadow h-100">
-        <div class="card-body">
-          <div class="d-flex justify-content-between align-items-start">
-            <h5 class="card-title">${e.title}</h5>
-            <span class="badge bg-dark">${e.category || "General"}</span>
-          </div>
-          <p class="card-text mb-1"><b>Date:</b> ${e.event_date}</p>
-          <p class="card-text mb-1"><b>Location:</b> ${e.location}</p>
-          <p class="card-text"><b>Capacity:</b> ${e.capacity}</p>
-          <button class="btn btn-success w-100" onclick="registerEvent(${e.id})">Register</button>
-        </div>
-      </div>
-    `;
-    wrap.appendChild(card);
-  });
+  statusEl.textContent = `Loaded ${data.length} event(s).`;
+  eventsEl.innerHTML = data.map(card).join("");
 }
 
-async function registerEvent(eventId) {
-  if (!token()) return alert("Login first!");
+async function registerEvent(event_id) {
+  if (!isLoggedIn()) {
+    alert("Please login first.");
+    window.location.href = "login.html";
+    return;
+  }
 
-  const res = await fetch(`${API_BASE}/api/registrations/${eventId}`, {
+  const { ok, data } = await apiFetch("/api/register-event", {
     method: "POST",
-    headers: { "Authorization": "Bearer " + token() }
+    body: { event_id },
+    auth: true,
   });
 
-  const data = await res.json();
-  if (!res.ok) return alert(data.message || "Failed");
-  alert("Registered!");
+  if (!ok) {
+    alert(data.error || data.message || "Registration failed");
+    return;
+  }
+
+  alert("Registered for event!");
 }
 
+setAuthUI();
 loadEvents();
 </script>
-
 </body>
 </html>
