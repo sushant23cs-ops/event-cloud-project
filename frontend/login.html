@@ -8,22 +8,26 @@
 </head>
 
 <body class="bg-light">
-
 <div class="container py-5" style="max-width:500px;">
   <div class="card shadow">
     <div class="card-body">
-      <h3>Login</h3>
+      <h3 class="mb-3">Login</h3>
 
-      <input id="email" class="form-control mb-2" placeholder="Email">
-      <input id="password" type="password" class="form-control mb-3" placeholder="Password">
+      <input id="email" class="form-control mb-2" placeholder="Email" />
+      <input id="password" type="password" class="form-control mb-3" placeholder="Password" />
       <button class="btn btn-dark w-100 mb-3" onclick="login()">Login</button>
 
-      <hr>
+      <div class="d-flex justify-content-between">
+        <a href="index.html">Go to Events</a>
+        <a href="dashboard.html">My Registrations</a>
+      </div>
 
-      <h5>Register</h5>
-      <input id="nameR" class="form-control mb-2" placeholder="Name">
-      <input id="emailR" class="form-control mb-2" placeholder="Email">
-      <input id="passR" type="password" class="form-control mb-3" placeholder="Password">
+      <hr class="my-4">
+
+      <h5 class="mb-3">Register</h5>
+      <input id="nameR" class="form-control mb-2" placeholder="Name" />
+      <input id="emailR" class="form-control mb-2" placeholder="Email" />
+      <input id="passR" type="password" class="form-control mb-3" placeholder="Password" />
       <button class="btn btn-success w-100" onclick="register()">Register</button>
     </div>
   </div>
@@ -41,29 +45,23 @@ async function login() {
       return;
     }
 
-    // ✅ Correct route (your backend uses /api/login)
-    const res = await fetch(`${API_BASE}/api/login`, {
+    const { ok, data } = await apiFetch("/api/login", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password })
+      body: { email, password }
     });
 
-    const data = await res.json().catch(() => ({}));
-
-    if (!res.ok) {
+    if (!ok) {
       alert(data.error || data.message || "Login failed");
       return;
     }
 
     localStorage.setItem("token", data.token);
     localStorage.setItem("role", data.user?.role || "");
-    alert("Login Successful!");
-
-    // change to dashboard.html if that's your dashboard page
+    alert("Login successful!");
     window.location.href = "index.html";
-  } catch (err) {
-    console.error(err);
-    alert("Backend not reachable. Check API_BASE in config.js");
+  } catch (e) {
+    console.error(e);
+    alert("Login error. Check console.");
   }
 }
 
@@ -78,27 +76,22 @@ async function register() {
       return;
     }
 
-    // ✅ Correct route (your backend uses /api/register)
-    const res = await fetch(`${API_BASE}/api/register`, {
+    const { ok, data } = await apiFetch("/api/register", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password })
+      body: { name, email, password }
     });
 
-    const data = await res.json().catch(() => ({}));
-
-    if (!res.ok) {
+    if (!ok) {
       alert(data.error || data.message || "Registration failed");
       return;
     }
 
     alert("Registered successfully! Now login.");
-  } catch (err) {
-    console.error(err);
-    alert("Backend not reachable. Check API_BASE in config.js");
+  } catch (e) {
+    console.error(e);
+    alert("Register error. Check console.");
   }
 }
 </script>
-
 </body>
 </html>
