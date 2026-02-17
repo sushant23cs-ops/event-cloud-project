@@ -20,13 +20,25 @@
 </nav>
 
 <div class="container py-4">
+
+  <div class="row g-2 align-items-end mb-3">
+    <div class="col-12 col-md-6">
+      <label class="form-label">Filter by Category</label>
+      <select id="categorySelect" class="form-select">
+        <option value="">All</option>
+      </select>
+    </div>
+    <div class="col-12 col-md-6">
+      <button class="btn btn-dark w-100" onclick="applyFilter()">Apply Filter</button>
+    </div>
+  </div>
+
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h3 class="m-0">All Events</h3>
     <button class="btn btn-secondary btn-sm" onclick="loadEvents()">Refresh</button>
   </div>
 
   <div id="status" class="text-muted mb-3"></div>
-
   <div id="events" class="row g-3"></div>
 </div>
 
@@ -36,6 +48,7 @@ const statusEl = document.getElementById("status");
 const eventsEl = document.getElementById("events");
 const loginBtn = document.getElementById("loginBtn");
 const logoutBtn = document.getElementById("logoutBtn");
+const categorySelect = document.getElementById("categorySelect");
 
 function setAuthUI() {
   const logged = isLoggedIn();
@@ -45,9 +58,7 @@ function setAuthUI() {
 }
 
 function formatDate(d) {
-  if (!d) return "";
-  // Railway date comes like "2026-03-01T00:00:00.000Z" sometimes
-  return String(d).slice(0, 10);
+  return String(d || "").slice(0, 10);
 }
 
 function card(event) {
@@ -57,13 +68,16 @@ function card(event) {
       <div class="card h-100 shadow-sm">
         <div class="card-body">
           <h5 class="card-title">${event.title || "Untitled"}</h5>
+
           <div class="text-muted small mb-2">
             <div><b>Category:</b> ${event.category ?? "General"}</div>
             <div><b>Date:</b> ${formatDate(event.event_date)}</div>
             <div><b>Location:</b> ${event.location ?? "-"}</div>
             ${event.capacity != null ? `<div><b>Capacity:</b> ${event.capacity}</div>` : ""}
           </div>
+
           <p class="card-text">${event.description ?? ""}</p>
+
           <button class="btn btn-primary w-100" ${canRegister ? "" : "disabled"}
             onclick="registerEvent(${event.id})">
             ${canRegister ? "Register for this event" : "Login to Register"}
@@ -74,11 +88,22 @@ function card(event) {
   `;
 }
 
-async function loadEvents() {
+async function loadCategories() {
+  const { ok, data } = await apiFetch("/api/categories");
+  if (!ok) return;
+
+  categorySelect.innerHTML =
+    `<option value="">All</option>` +
+    data.map(c => `<option value="${c.name}">${c.name}</option>`).join("");
+}
+
+async function loadEvents(category = "") {
   statusEl.textContent = "Loading events...";
   eventsEl.innerHTML = "";
 
-  const { ok, data } = await apiFetch("/api/events");
+  const q = category ? `?category=${encodeURIComponent(category)}` : "";
+  const { ok, data } = await apiFetch(`/api/events${q}`);
+
   if (!ok) {
     statusEl.textContent = "Failed to load events.";
     alert(data.error || data.message || "Failed to load events");
@@ -87,6 +112,11 @@ async function loadEvents() {
 
   statusEl.textContent = `Loaded ${data.length} event(s).`;
   eventsEl.innerHTML = data.map(card).join("");
+}
+
+async function applyFilter() {
+  const cat = categorySelect.value;
+  await loadEvents(cat);
 }
 
 async function registerEvent(event_id) {
@@ -107,14 +137,14 @@ async function registerEvent(event_id) {
     return;
   }
 
-alert("Registered for event!");
-window.location.href = "dashboard.html";
-
+  alert("Registered for event!");
+  // Optional: go to dashboard automatically
+  // window.location.href = "dashboard.html";
 }
 
 setAuthUI();
+loadCategories();
 loadEvents();
 </script>
 </body>
 </html>
-
