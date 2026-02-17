@@ -1,7 +1,5 @@
-// frontend/config.js
 const API_BASE = "https://event-cloud-project.onrender.com";
 
-// Helper: fetch JSON with optional auth
 async function apiFetch(path, { method = "GET", body, auth = false } = {}) {
   const headers = { "Content-Type": "application/json" };
 
