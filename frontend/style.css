@@ -1,41 +1,248 @@
-/* ===== Background ===== */
-body {
-  background: url("https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2")
+/* =========================================================
+   EVENT CLOUD - GLASSMORPHISM UI THEME (FULL STYLE.CSS)
+   ========================================================= */
+
+/* --------- Base / Background --------- */
+:root{
+  --glass-bg: rgba(255, 255, 255, 0.14);
+  --glass-border: rgba(255, 255, 255, 0.28);
+  --glass-shadow: 0 12px 35px rgba(0,0,0,0.22);
+
+  --text-dark: #0b1220;
+  --text-light: rgba(255,255,255,0.92);
+  --muted-light: rgba(255,255,255,0.72);
+
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+
+  --accent: #fbbf24;
+  --accent-hover: #f59e0b;
+
+  --surface: rgba(255,255,255,0.85);
+  --surface-2: rgba(255,255,255,0.70);
+}
+
+*{
+  box-sizing: border-box;
+}
+
+body{
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  color: var(--text-light);
+
+  /* Glassy background */
+  background:
+    radial-gradient(1200px 600px at 20% 10%, rgba(59,130,246,0.35), transparent 60%),
+    radial-gradient(900px 500px at 90% 20%, rgba(251,191,36,0.28), transparent 60%),
+    linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.65)),
+    url("https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=1920")
     no-repeat center center fixed;
   background-size: cover;
-  font-family: 'Segoe UI', sans-serif;
 }
 
-/* Dark overlay */
-body::before {
-  content: "";
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.6);
-  z-index: -1;
+/* Make links readable */
+a{
+  color: rgba(255,255,255,0.92);
+  text-decoration: none;
+}
+a:hover{
+  text-decoration: underline;
 }
 
-/* Glass effect cards */
-.card {
-  background: rgba(255, 255, 255, 0.85);
+/* --------- Navbar (Glass) --------- */
+.navbar{
+  background: rgba(15, 23, 42, 0.55) !important;  /* slate-ish */
   backdrop-filter: blur(10px);
-  border-radius: 15px;
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255,255,255,0.12);
 }
 
-/* Navbar style */
-.navbar {
-  background: linear-gradient(90deg, #0f2027, #203a43, #2c5364);
+.navbar-brand{
+  font-weight: 700;
+  letter-spacing: 0.4px;
 }
 
-/* Buttons */
-.btn {
-  border-radius: 25px;
-}
-
-/* Headings */
-h3, h5 {
+.navbar .btn{
+  border-radius: 999px;
+  padding: 6px 12px;
   font-weight: 600;
+}
+
+.navbar .btn-outline-light{
+  border-color: rgba(255,255,255,0.55);
+  color: rgba(255,255,255,0.92);
+}
+.navbar .btn-outline-light:hover{
+  background: rgba(255,255,255,0.90);
+  color: #0b1220;
+  border-color: rgba(255,255,255,0.90);
+}
+
+.navbar .btn-warning{
+  background: var(--accent);
+  border: none;
+  color: #111827;
+}
+.navbar .btn-warning:hover{
+  background: var(--accent-hover);
+}
+
+/* --------- Main Container (Glass Panel) --------- */
+.container{
+  margin-top: 18px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 18px;
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 22px;
+}
+
+/* --------- Headings / Text --------- */
+h1,h2,h3,h4,h5{
+  color: rgba(255,255,255,0.95) !important;
+  font-weight: 800;
+  text-shadow: 0 4px 18px rgba(0,0,0,0.35);
+}
+
+label{
+  color: rgba(255,255,255,0.90) !important;
+  font-weight: 700;
+}
+
+#status{
+  color: rgba(255,255,255,0.85) !important;
+  font-weight: 600;
+}
+
+/* --------- Inputs / Dropdown (Glass) --------- */
+.form-control, .form-select{
+  border-radius: 12px !important;
+  background: rgba(255,255,255,0.85) !important;
+  border: 1px solid rgba(255,255,255,0.35) !important;
+  color: #111827 !important;
+}
+
+.form-control:focus, .form-select:focus{
+  box-shadow: 0 0 0 4px rgba(59,130,246,0.25) !important;
+  border-color: rgba(59,130,246,0.55) !important;
+}
+
+/* --------- Cards (Modern Glass + Hover) --------- */
+.card{
+  border: 1px solid rgba(255,255,255,0.18) !important;
+  border-radius: 18px !important;
+  background: rgba(255,255,255,0.92) !important;
+  color: #0b1220 !important;
+  overflow: hidden;
+  transition: transform 0.20s ease, box-shadow 0.20s ease, filter 0.20s ease;
+}
+
+.card::before{
+  content:"";
+  display:block;
+  height: 6px;
+  background: linear-gradient(90deg, rgba(59,130,246,0.95), rgba(251,191,36,0.95));
+}
+
+.card:hover{
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 16px 45px rgba(0,0,0,0.25);
+  filter: saturate(1.05);
+}
+
+.card-title{
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
+
+.card-text{
+  color: #111827;
+}
+
+.card .text-muted{
+  color: rgba(17,24,39,0.70) !important;
+}
+
+/* --------- Buttons (Rounded + Animations) --------- */
+.btn{
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.btn:active{
+  transform: scale(0.98);
+}
+
+.btn-primary{
+  background: var(--primary) !important;
+  border: none !important;
+  border-radius: 999px !important;
+  font-weight: 700 !important;
+  box-shadow: 0 8px 18px rgba(59,130,246,0.25);
+}
+
+.btn-primary:hover{
+  background: var(--primary-hover) !important;
+  box-shadow: 0 12px 26px rgba(59,130,246,0.32);
+}
+
+.btn-secondary{
+  border-radius: 999px !important;
+  font-weight: 700 !important;
+}
+
+.btn-dark{
+  border-radius: 999px !important;
+  font-weight: 800 !important;
+}
+
+.btn-success{
+  border-radius: 999px !important;
+  font-weight: 800 !important;
+}
+
+/* --------- Login page tweaks --------- */
+body.bg-light{
+  background: none; /* bootstrap sets bg-light, we override with our background */
+}
+
+.card.shadow{
+  box-shadow: 0 14px 40px rgba(0,0,0,0.25) !important;
+}
+
+/* --------- List group (My Registrations) --------- */
+.list-group-item{
+  border-radius: 14px !important;
+  border: 1px solid rgba(255,255,255,0.20) !important;
+  background: rgba(255,255,255,0.92) !important;
+  margin-bottom: 10px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+}
+
+/* --------- Nice scrollbar (optional) --------- */
+::-webkit-scrollbar{
+  width: 10px;
+}
+::-webkit-scrollbar-track{
+  background: rgba(255,255,255,0.08);
+}
+::-webkit-scrollbar-thumb{
+  background: rgba(255,255,255,0.25);
+  border-radius: 20px;
+}
+::-webkit-scrollbar-thumb:hover{
+  background: rgba(255,255,255,0.35);
+}
+
+/* --------- Mobile responsive --------- */
+@media (max-width: 768px){
+  .container{
+    padding: 16px;
+    border-radius: 16px;
+  }
+  h3{
+    font-size: 22px;
+  }
 }
