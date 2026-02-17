@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="navbar navbar-dark">
+  <div class="container">
+    <span class="navbar-brand">Admin Dashboard</span>
+    <div>
+      <a href="index.html" class="btn btn-outline-light btn-sm">Home</a>
+      <a href="my.html" class="btn btn-primary btn-sm">My Registrations</a>
+      <a href="login.html" class="btn btn-warning btn-sm" onclick="logout()">Logout</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container py-4">
+  <h3 class="text-white mb-3">Manage Events</h3>
+
+  <div class="card shadow-sm p-3 mb-4">
+    <h5 class="mb-3">Create Event</h5>
+
+    <label class="form-label">Title</label>
+    <input id="title" class="form-control mb-2" placeholder="e.g., EDM Night 2026">
+
+    <label class="form-label">Date</label>
+    <input id="date" type="date" class="form-control mb-2">
+
+    <label class="form-label">Location</label>
+    <input id="location" class="form-control mb-2" placeholder="e.g., College Ground">
+
+    <label class="form-label">Capacity</label>
+    <input id="capacity" type="number" class="form-control mb-2" placeholder="e.g., 150">
+
+    <label class="form-label">Category</label>
+    <select id="category" class="form-select mb-3">
+      <option value="Concert">Concert</option>
+      <option value="Seminar">Seminar</option>
+      <option value="Workshop">Workshop</option>
+      <option value="Sports">Sports</option>
+      <option value="Festival">Festival</option>
+      <option value="General" selected>General</option>
+    </select>
+
+    <button class="btn btn-success" onclick="createNewEvent()">Create</button>
+  </div>
+
+  <h5 class="text-white mb-2">All Events</h5>
+  <div id="events"></div>
+</div>
+
+<script src="config.js"></script>
+<script>
+function getToken() {
+  return localStorage.getItem("token");
+}
+
+function logout() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("role");
+}
+
+function checkAdmin() {
+  const role = localStorage.getItem("role");
+  const token = getToken();
+
+  if (!token) {
+    alert("Login first");
+    window.location.href = "login.html";
+    return;
+  }
+
+  if (role !== "ADMIN") {
+    alert("Admin access only");
+    window.location.href = "index.html";
+    return;
+  }
+}
+
+async function loadEvents() {
+  const res = await fetch(`${API_BASE}/api/events`);
+  const events = await res.json();
+
+  const container = document.getElementById("events");
+  container.innerHTML = "";
+
+  if (!events.length) {
+    container.innerHTML = `<div class="alert alert-info">No events created yet.</div>`;
+    return;
+  }
+
+  events.forEach(e => {
+    container.innerHTML += `
+      <div class="card shadow-sm mb-2 p-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="fw-bold">${e.title} <span class="badge bg-dark ms-2">${e.category || "General"}</span></div>
+            <div class="text-muted small">${e.event_date} • ${e.location} • Capacity: ${e.capacity}</div>
+          </div>
+          <button class="btn btn-danger btn-sm" onclick="deleteEvent(${e.id})">Delete</button>
+        </div>
+      </div>
+    `;
+  });
+}
+
+async function createNewEvent() {
+  const title = document.getElementById("title").value.trim();
+  const event_date = document.getElementById("date").value;
+  const location = document.getElementById("location").value.trim();
+  const capacity = Number(document.getElementById("capacity").value || 50);
+  const category = document.getElementById("category").value;
+
+  if (!title || !event_date || !location) {
+    alert("Please fill Title, Date, and Location");
+    return;
+  }
+
+  const token = getToken();
+  if (!token) {
+    alert("Login first");
+    window.location.href = "login.html";
+    return;
+  }
+
+  const res = await fetch(`${API_BASE}/api/events`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token
+    },
+    body: JSON.stringify({ title, event_date, location, capacity, category })
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    alert(data.message || ("Error: " + res.status));
+    return;
+  }
+
+  alert("Event Created!");
+
+  document.getElementById("title").value = "";
+  document.getElementById("date").value = "";
+  document.getElementById("location").value = "";
+  document.getElementById("capacity").value = "";
+  document.getElementById("category").value = "General";
+
+  loadEvents();
+}
+
+async function deleteEvent(id) {
+  const token = getToken();
+  if (!token) return alert("Login first");
+
+  if (!confirm("Delete this event?")) return;
+
+  const res = await fetch(`${API_BASE}/api/events/${id}`, {
+    method: "DELETE",
+    headers: { "Authorization": "Bearer " + token }
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    alert(data.message || ("Error: " + res.status));
+    return;
+  }
+
+  alert("Deleted");
+  loadEvents();
+}
+
+checkAdmin();
+loadEvents();
+</script>
+
+</body>
+</html>
